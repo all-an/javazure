@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -16,6 +17,9 @@ import java.io.InputStream;
 @Configuration
 public class FirebaseConfig {
 
+    @Value("${firebase.enabled:true}")
+    private boolean firebaseEnabled;
+
     @Value("${firebase.project-id:javazure-portfolio}")
     private String projectId;
 
@@ -24,6 +28,11 @@ public class FirebaseConfig {
 
     @PostConstruct
     public void initialize() {
+        if (!firebaseEnabled) {
+            System.out.println("Firebase is disabled via configuration");
+            return;
+        }
+        
         try {
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseOptions.Builder optionsBuilder = FirebaseOptions.builder()
@@ -70,6 +79,7 @@ public class FirebaseConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(value = "firebase.enabled", havingValue = "true", matchIfMissing = true)
     public Firestore getDatabase() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {

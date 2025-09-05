@@ -70,8 +70,8 @@ jobs:
           
     - name: Verify coverage threshold
       run: |
-        # Check if coverage meets minimum requirements
-        mvn jacoco:check || echo "Coverage threshold not met - check reports"
+        # Check if coverage meets minimum requirements (allowing CI to continue even if threshold not met)
+        mvn jacoco:check || echo "Coverage below 80% - see reports for details"
 
   build:
     runs-on: ubuntu-latest

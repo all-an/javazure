@@ -6,6 +6,7 @@ import com.google.cloud.firestore.Firestore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -43,8 +44,8 @@ public class FirebaseMessageService implements MessageService {
      *
      * @param firestore The Firestore database instance (can be null for mock mode)
      */
-    @Autowired
-    public FirebaseMessageService(Firestore firestore) {
+    @Autowired(required = false)
+    public FirebaseMessageService(@Nullable Firestore firestore) {
         this.firestore = firestore;
         
         if (firestore == null) {
