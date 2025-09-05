@@ -29,16 +29,36 @@ public class FirebaseConfig {
                 FirebaseOptions.Builder optionsBuilder = FirebaseOptions.builder()
                         .setProjectId(projectId);
 
-                // Try to load credentials if path is provided
-                if (!credentialsPath.isEmpty()) {
+                GoogleCredentials credentials = null;
+
+                // Priority 1: Try to load from Azure environment variable (JSON string)
+                String credentialsJson = System.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON");
+                if (credentialsJson != null && !credentialsJson.isEmpty()) {
+                    try {
+                        InputStream credentialsStream = new java.io.ByteArrayInputStream(credentialsJson.getBytes());
+                        credentials = GoogleCredentials.fromStream(credentialsStream);
+                        System.out.println("Firebase credentials loaded from GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable");
+                    } catch (Exception e) {
+                        System.err.println("Could not load credentials from environment variable: " + e.getMessage());
+                    }
+                }
+
+                // Priority 2: Try to load from file path if environment variable failed
+                if (credentials == null && !credentialsPath.isEmpty()) {
                     try {
                         ClassPathResource resource = new ClassPathResource(credentialsPath);
                         InputStream serviceAccount = resource.getInputStream();
-                        GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
-                        optionsBuilder.setCredentials(credentials);
+                        credentials = GoogleCredentials.fromStream(serviceAccount);
+                        System.out.println("Firebase credentials loaded from file: " + credentialsPath);
                     } catch (Exception e) {
-                        System.out.println("Could not load Firebase credentials, using default: " + e.getMessage());
+                        System.out.println("Could not load Firebase credentials from file: " + e.getMessage());
                     }
+                }
+
+                if (credentials != null) {
+                    optionsBuilder.setCredentials(credentials);
+                } else {
+                    System.out.println("No Firebase credentials found, using default (may fail if not running on GCP)");
                 }
 
                 FirebaseApp.initializeApp(optionsBuilder.build());
