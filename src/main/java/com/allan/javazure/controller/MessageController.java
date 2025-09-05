@@ -1,42 +1,31 @@
 package com.allan.javazure.controller;
 
-import com.allan.javazure.entity.Message;
-import com.allan.javazure.repository.MessageRepository;
+import com.allan.javazure.service.FirebaseMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 public class MessageController {
 
     @Autowired
-    private MessageRepository messageRepository;
+    private FirebaseMessageService firebaseMessageService;
 
     @GetMapping("/")
-    public String home(Model model) {
-        // Don't load existing messages for portfolio demo
-        model.addAttribute("messages", List.of());
-        model.addAttribute("newMessage", new Message());
+    public String home() {
         return "index";
     }
 
     @PostMapping("/messages")
     @ResponseBody
-    public ResponseEntity<Message> createMessage(@RequestBody CreateMessageRequest request) {
-        Message message = new Message(request.getContent(), request.getAuthor());
-        Message savedMessage = messageRepository.save(message);
-        return ResponseEntity.ok(savedMessage);
-    }
-
-    @GetMapping("/messages")
-    @ResponseBody
-    public ResponseEntity<List<Message>> getAllMessages() {
-        List<Message> messages = messageRepository.findAllByOrderByCreatedAtDesc();
-        return ResponseEntity.ok(messages);
+    public ResponseEntity<MessageResponse> createMessage(@RequestBody CreateMessageRequest request) {
+        try {
+            firebaseMessageService.saveMessage(request.getAuthor(), request.getContent());
+            return ResponseEntity.ok(new MessageResponse("Message sent successfully!", true));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new MessageResponse("Error sending message", false));
+        }
     }
 
     public static class CreateMessageRequest {
@@ -57,6 +46,32 @@ public class MessageController {
 
         public void setAuthor(String author) {
             this.author = author;
+        }
+    }
+
+    public static class MessageResponse {
+        private String message;
+        private boolean success;
+
+        public MessageResponse(String message, boolean success) {
+            this.message = message;
+            this.success = success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
     }
 }
