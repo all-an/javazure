@@ -1,0 +1,36 @@
+{
+  "name": "javazure-portfolio",
+  "version": "1.0.0",
+  "description": "Allan's portfolio message board",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --verbose"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.4"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/src/test/javascript/setup.js"],
+    "testMatch": [
+      "<rootDir>/src/test/javascript/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/main/resources/static/js/**/*.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json"
+    ],
+    "verbose": true
+  }
+}
