@@ -226,7 +226,7 @@ describe('FormManager', () => {
 
     test('should submit message successfully', async () => {
         const mockResponse = {
-            json: jest.fn().resolve({ message: 'Success!' })
+            json: jest.fn().mockResolvedValue({ message: 'Success!' })
         };
         global.fetch.mockResolvedValue(mockResponse);
         
@@ -246,16 +246,17 @@ describe('FormManager', () => {
 
     test('should handle form submission successfully', async () => {
         const mockResponse = {
-            json: jest.fn().resolve({ message: 'Message sent!' })
+            json: jest.fn().mockResolvedValue({ message: 'Message sent!' })
         };
         global.fetch.mockResolvedValue(mockResponse);
         
         elements.contentInput.value = 'Test message';
         elements.authorInput.value = 'Allan';
         
-        const event = new Event('submit');
-        const button = elements.messageForm.querySelector('button[type="submit"]');
-        event.target = elements.messageForm;
+        const event = { 
+            preventDefault: jest.fn(),
+            target: elements.messageForm
+        };
         
         const showSpy = jest.spyOn(alertManager, 'show');
         
@@ -271,8 +272,10 @@ describe('FormManager', () => {
         
         elements.contentInput.value = 'Test message';
         
-        const event = new Event('submit');
-        event.target = elements.messageForm;
+        const event = { 
+            preventDefault: jest.fn(),
+            target: elements.messageForm
+        };
         
         const showSpy = jest.spyOn(alertManager, 'show');
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
@@ -289,8 +292,10 @@ describe('FormManager', () => {
         formManager.isSubmitting = true;
         elements.contentInput.value = 'Test message';
         
-        const event = new Event('submit');
-        event.target = elements.messageForm;
+        const event = { 
+            preventDefault: jest.fn(),
+            target: elements.messageForm
+        };
         
         await formManager.handleSubmit(event);
         
@@ -320,11 +325,14 @@ describe('PortfolioApp', () => {
     });
 
     test('should fail initialization with invalid DOM', () => {
-        document.getElementById('customAlert').remove();
+        // Clear all DOM content to simulate missing elements
+        document.body.innerHTML = '';
         
+        // Create a fresh app instance with empty DOM
+        const testApp = new PortfolioApp();
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
         
-        const result = app.init();
+        const result = testApp.init();
         
         expect(result).toBe(false);
         expect(consoleErrorSpy).toHaveBeenCalledWith('Required DOM elements not found');
